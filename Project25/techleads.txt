@@ -1,0 +1,6 @@
+Middle 143 50
+Senior 178 75
+Middle 122 30
+Senior 157 60
+Middle 136 40
+Senior 162 70
