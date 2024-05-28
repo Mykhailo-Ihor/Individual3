@@ -129,10 +129,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="position.h" />
+    <ClInclude Include="positionEnum.h" />
     <ClInclude Include="programmer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="positionEnum.cpp" />
+    <ClCompile Include="programmer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="programmers.txt" />

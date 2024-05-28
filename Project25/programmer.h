@@ -1,11 +1,11 @@
 #pragma once
 #include "position.h"
+#include "positionEnum.h"
 #include <iomanip>
 #include <string>
 #include <sstream>
 #include <vector>
 #include <fstream>
-#include <iostream>
 #include <map>
 
 class ProgrammerBase {
@@ -15,6 +15,7 @@ public:
 	ProgrammerBase(int hw = 0) : hours_worked(hw) {}
 	virtual ~ProgrammerBase() = default;
 	virtual void print() const abstract;
+	virtual void readFrom(std::istream& is) { is >> hours_worked; }
 	virtual double get_salary() const abstract;
 	int get_hours_worked() const { return hours_worked; }
 	virtual std::string get_position() const abstract;
@@ -24,15 +25,17 @@ public:
 		return hours_worked < p.hours_worked;
 	}
 };
+std::ostream& operator<<(std::ostream& os, const ProgrammerBase& p);
+std::istream& operator>>(std::istream& is, ProgrammerBase& p);
 
 template <typename ProgPosition>
 class Programmer : public ProgrammerBase {
-public:
-	typedef ProgPosition position_type;
 protected:
+	typedef ProgPosition position_type;
 	position_type position;
 public:
 	Programmer(int hw = 0) : position(position_type()), ProgrammerBase(hw) {}
+	~Programmer() = default;
 	void print() const override;
 	double get_salary() const override {
 		return ProgPosition::salary_per_hour * hours_worked;
@@ -45,16 +48,29 @@ public:
 	}
 };
 
+template <>
+class Programmer<PositionEnum> : public ProgrammerBase
+{
+protected:
+	PositionEnum position;
+public:
+	Programmer(PositionEnum p = PositionEnum::Junior,int hw = 0) : position(p), ProgrammerBase(hw) {}
+	~Programmer() = default;
+	void print() const override;
+	double get_salary() const override;
+	std::string get_position() const override;
+};
+
 template <typename ProgPosition>
 class TechLead : public Programmer<ProgPosition> {
 private:
 	int team_size;
 	static constexpr double salary_increase = 0.01;
 public:
-	using position_type = ProgPosition;
 	TechLead(int hw = 0, int ts = 0) : Programmer<ProgPosition>(hw), team_size(ts) {}
+	~TechLead() = default;
 	void print() const override;
-
+	void readFrom(std::istream& is) override { Programmer<ProgPosition>::readFrom(is); is >> team_size; }
 	double get_salary() const override {
 		return Programmer<ProgPosition>::get_salary() * (1 + get_salary_bonus() * 0.01);
 	}
@@ -63,6 +79,24 @@ public:
 	}
 };
 
+template <>
+class TechLead<PositionEnum> : public Programmer<PositionEnum> 
+{
+private:
+	int team_size;
+	static constexpr double salary_increase = 0.01;
+public:
+	TechLead(PositionEnum p = PositionEnum::Junior,int hw = 0, int ts = 0) : Programmer<PositionEnum>(p,hw), team_size(ts) {}
+	~TechLead() = default;
+	void print() const override;
+	void readFrom(std::istream& is) override { Programmer<PositionEnum>::readFrom(is); is >> team_size; }
+	double get_salary() const override {
+		return Programmer<PositionEnum>::get_salary() * (1 + get_salary_bonus() * 0.01);
+	}
+	double get_salary_bonus() const {
+		return salary_increase * team_size;
+	}
+};
 template<typename ProgPosition>
 inline void Programmer<ProgPosition>::print() const
 {
@@ -93,59 +127,8 @@ inline void TechLead<ProgPosition>::print() const
 		<< " | salary bonus: " << get_salary_bonus() << '%' << std::endl;
 }
 
+void add_programmers(const std::string& filename, std::vector<std::unique_ptr<ProgrammerBase>>& v);
+void add_tech_leads(const std::string& filename, std::vector<std::unique_ptr<ProgrammerBase>>& v);
 
-void add_programmers(const std::string& filename, std::vector<std::unique_ptr<ProgrammerBase>>& v) {
-	std::ifstream fin(filename);
-	std::string line;
-
-	while (std::getline(fin, line)) {
-		std::istringstream iss(line);
-		std::string position;
-		double hours;
-		iss >> position >> hours;
-
-		if (position == "Junior") {
-			v.push_back(std::make_unique<Programmer<Junior>>(hours));
-		}
-		else if (position == "Middle") {
-			v.push_back(std::make_unique<Programmer<Middle>>(hours));
-		}
-		else if (position == "Senior") {
-			v.push_back(std::make_unique<Programmer<Senior>>(hours));
-		}
-		else
-		{
-			std::string line;
-			getline(fin, line);
-		}
-	}
-}
-
-void add_tech_leads(const std::string& filename, std::vector<std::unique_ptr<ProgrammerBase>>& v) 
-{
-	std::ifstream fin(filename);
-	std::string line;
-
-	while (std::getline(fin, line)) {
-		std::istringstream iss(line);
-		std::string position;
-		double hours;
-		int team_size;
-		iss >> position >> hours >> team_size;
-
-		if (position == "Junior") {
-			v.push_back(std::make_unique<TechLead<Junior>>(hours, team_size));
-		}
-		else if (position == "Middle") {
-			v.push_back(std::make_unique<TechLead<Middle>>(hours, team_size));
-		}
-		else if (position == "Senior") {
-			v.push_back(std::make_unique<TechLead<Senior>>(hours, team_size));
-		}
-		else
-		{
-			std::string line;
-			getline(fin, line);
-		}
-	}
-}
+void add_programmersEnum(const std::string& filename, std::vector<std::unique_ptr<ProgrammerBase>>& v);
+void add_tech_leadsEnum(const std::string& filename, std::vector<std::unique_ptr<ProgrammerBase>>& v);

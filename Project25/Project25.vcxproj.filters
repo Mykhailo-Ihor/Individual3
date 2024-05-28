@@ -21,9 +21,18 @@
     <ClInclude Include="programmer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="positionEnum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="programmer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="positionEnum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

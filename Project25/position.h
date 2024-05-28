@@ -5,13 +5,8 @@ class ProgrammerPosition abstract
 public:
 	virtual void print(std::ostream& os = std::cout) const abstract;
 	virtual ~ProgrammerPosition() = default;
+	friend std::ostream& operator<<(std::ostream& os, const ProgrammerPosition& P) { P.print(os); return os; }
 };
-
-std::ostream& operator<<(std::ostream& os, const ProgrammerPosition& P)
-{
-	P.print(os);
-	return os;
-}
 
 class Junior : public ProgrammerPosition
 {
